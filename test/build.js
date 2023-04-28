@@ -1,11 +1,12 @@
-'use strict'
+import browserify from "browserify";
+import glob from "glob";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 
-const browserify = require('browserify')
-const glob = require('glob')
-const path = require('path')
-const fs = require('fs')
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
-function wrap (content, files) {
+function wrap(content, files) {
   return `
   (function () {
     var fs = {}
@@ -34,34 +35,37 @@ function wrap (content, files) {
     ;${content}
 
     describe('zlib-browserify', function () {
-      ${files.map(file => `
-        it('${path.basename(file, '.js')}', function () {
+      ${files
+        .map(
+          (file) => `
+        it('${path.basename(file, ".js")}', function () {
           require(${JSON.stringify(path.normalize(file))})
           doTimeouts()
         })`
-      ).join('')}
+        )
+        .join("")}
     })
   })();
-  `
+  `;
 }
 
-const browserified = path.join(__dirname, 'tmp/browserified.js')
+const browserified = path.join(__dirname, "tmp/browserified.js");
 
-glob(path.join(__dirname, 'test-*'), (err, files) => {
-  if (err) throw err
+glob(path.join(__dirname, "test-*"), (err, files) => {
+  if (err) throw err;
 
   // workaround for old assert version in browserify
-  require('browserify/lib/builtins').assert = require.resolve('assert/')
+  require("browserify/lib/builtins").assert = require.resolve("assert/");
 
   const b = browserify({
-    transform: ['babelify', 'brfs']
-  })
+    transform: ["babelify", "brfs"],
+  });
 
-  b.require(files)
+  b.require(files);
   b.bundle((err, buf) => {
-    if (err) throw err
+    if (err) throw err;
 
-    fs.writeFileSync(browserified, wrap(buf, files))
-    console.log('bundled')
-  })
-})
+    fs.writeFileSync(browserified, wrap(buf, files));
+    console.log("bundled");
+  });
+});

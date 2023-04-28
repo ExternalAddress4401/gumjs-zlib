@@ -2,6 +2,7 @@
   "name": "browserify-zlib",
   "version": "0.2.0",
   "description": "Full zlib module for the browser",
+  "type": "module",
   "keywords": [
     "zlib",
     "browserify"
